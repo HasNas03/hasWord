@@ -1,0 +1,152 @@
+q2. Marking: Relative weight for each section is below
+
+    Building: 
+    	To work on this, edit .c files and then, in the same directory, 
+
+	$ make all
+
+    	and run the appropriate command
+
+	Alternatively, you can instead, in the same directory
+
+	$ make hasWord # if you work on any hasWord related files
+	$ make test_parseArgs # if you work on any test_parseArgs related files
+
+	
+    Restrictions: 
+
+    	i) No changes to list of #includes is allowed (no other libraries allowed)
+ 	
+    	ii) No changes to myStrings.h and parseArgs.h are allowed. So no
+        	changes to exported functions from myStrings.c, parseArgs.c
+ 	
+    	iii) The only standard library functions allowed are
+         	hasWord.c
+			fclose // from stdio, man 3 fclose
+			fgetc  // from stdio, man 3 fgetc
+			fopen  // from stdio, man 3 fopen
+			perror // from stdio, man 3 perror
+			exit   // from stdlib, man 3 exit
+	
+	 	myStrings.c
+			(NONE)
+	
+	 	parseArgs.c
+			fprintf // from stdio, man 3 fprintf
+			printf  // from stdio, man 3 printf
+
+a. [5 Marks]
+   Rewrite myStrings.h and myStrings.c in the pointers directory
+   so that the code in pointers/myStrings.c and pointers/myStrings.h
+   only uses pointers, no array notation allowed. The behaviour
+   should be identical after modification. 
+
+   You know you are doing well if you can 
+
+	$ make clean
+	$ make test_myStrings
+	$ ./test_myStrings # results in 
+
+	OK  (return) = (1) EXPECTED (1) myisStrEQ(,)
+	OK  (return) = (0) EXPECTED (0) myisStrEQ(,a)
+	OK  (return) = (0) EXPECTED (0) myisStrEQ(a,)
+	OK  (return) = (0) EXPECTED (0) myisStrEQ(,abc)
+	OK  (return) = (0) EXPECTED (0) myisStrEQ(abc,)
+	OK  (return) = (0) EXPECTED (0) myisStrEQ(ab,abc)
+	OK  (return) = (0) EXPECTED (0) myisStrEQ(abc,ab)
+	OK  (return) = (1) EXPECTED (1) myisStrEQ(a,a)
+	OK  (return) = (1) EXPECTED (1) myisStrEQ(ab,ab)
+	OK  (return) = (1) EXPECTED (1) myisStrEQ(abc,abc)
+	OK  (return) = (1) EXPECTED (1) myisStrEmpty()
+	OK  (return) = (0) EXPECTED (0) myisStrEmpty(a)
+	OK  (return) = (0) EXPECTED (0) myisStrEmpty(ab)
+	OK  (return) = (0) EXPECTED (0) myisStrEmpty(abc)
+	OK  (return) = (0) EXPECTED (0) myStrLen()
+	OK  (return) = (1) EXPECTED (1) myStrLen(a)
+	OK  (return) = (2) EXPECTED (2) myStrLen(ab)
+	OK  (return) = (3) EXPECTED (3) myStrLen(abc)
+	OK  myStrCpy(buff, )
+	OK  myStrCpy(buff, a)
+	OK  myStrCpy(buff, ab)
+	OK  myStrCpy(buff, abc)
+
+b. [5 Marks] 
+   Complete parseArgs.c, used by hasWord and test_parseArgs
+
+   This function looks at argc and argv, 
+   does not open files etc. It just determines if the command
+   line arguments make sense for hasWord. It returns 
+	0 for failure
+	1 for success
+	2 for having printed the usage message (--help).
+
+   --help in any parameter means print usage message
+
+   It appropriately sets 
+
+       iWord=the index in argv of the word to search for
+       iFileName=the index in argv of the filename, -1 means no filename supplied
+
+   If iFileName ==-1, the caller knows that no filename is supplied 
+   and hasWord should read from stdin.
+
+   You know you are successful if you can 
+
+	$ make test_parseArgs
+	$ ./test_parseArgs # results in 
+
+	hasWord: incorrect number of arguments
+	Try 'hasWord --help' for more information.
+	OK  (return, iWord,iFileName) = (0,-1,-1) EXPECTED (0,-1,-1) parseArgs(0,[])
+	hasWord: incorrect number of arguments
+	Try 'hasWord --help' for more information.
+	OK  (return, iWord,iFileName) = (0,-1,-1) EXPECTED (0,-1,-1) parseArgs(1,[./hasWord,])
+	OK  (return, iWord,iFileName) = (1,1,-1) EXPECTED (1,1,-1) parseArgs(2,[./hasWord,word,])
+	OK  (return, iWord,iFileName) = (1,1,2) EXPECTED (1,1,2) parseArgs(3,[./hasWord,word,filename,])
+	hasWord: incorrect number of arguments
+	Try 'hasWord --help' for more information.
+	OK  (return, iWord,iFileName) = (0,-1,-1) EXPECTED (0,-1,-1) parseArgs(4,[./hasWord,word,filename,other,])
+	OK  (return, iWord,iFileName) = (2,-1,-1) EXPECTED (2,-1,-1) parseArgs(4,[./hasWord,--help,filename,other,])
+	
+		NOTE: usage message omitted above, you have to create it!!
+	
+	OK  (return, iWord,iFileName) = (2,-1,-1) EXPECTED (2,-1,-1) parseArgs(6,[./hasWord,word,filename,other,--help,other,])
+	
+		NOTE: usage message omitted above, you have to create it!!
+	
+	
+   parseArgs parses (int argc, char *argv[]) so that 
+
+   	$ hasWord 
+	# error to stderr as below, iWord = -1, iFileName =-1
+	hasWord: incorrect number of arguments
+	Try 'hasWord --help' for more information.
+
+   	$ hasWord word 
+	# iWord set to the index of word in argv (1)
+	# iFileName set to -1 indicating no filename supplied
+
+   	$ hasWord word filename 
+	# iWord set to the index of word in argv (1) 
+	# iFileName set to the index of filename in argv (2)
+   
+   	$ hasWord word filename other # error to stderr as below, iWord = -1, iFileName =-1
+
+	hasWord: incorrect number of arguments
+	Try 'hasWord --help' for more information.
+
+
+c. [15 Marks]
+   Complete hasWord.c so that 
+
+	$ hasWord word # reads stdin
+	# if word is seen in stdin, hasWord sets return code to 0, otherwise 1
+
+	$ hasWord word filename # reads filename
+	# if word is seen in filename, hasWord sets return code to 0, otherwise 1
+
+	hasWord with incorrect arguments, sends an error message to stderr, sets returncode to 127
+
+	$ hasWord --help # prints out a usage message, sets returncode to 0 
+                       # --help could be in any parameter position
+
